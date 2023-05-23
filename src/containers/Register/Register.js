@@ -66,20 +66,20 @@ const Register = () => {
               />
             </Grid>
             <Button 
-                variant="outlined"
-                type="submit"
-                fullWidth
-                sx={{ mt: 3, mb: 2 }}
-              >
-                Sign Up
-              </Button>
-              <Grid container justifyContent={"flex-end"}>
-                <Grid item>
-                  <Link to="/login">
-                    Already have an account? Sign in
-                  </Link>
-                </Grid>
+              variant="outlined"
+              type="submit"
+              fullWidth
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign Up
+            </Button>
+            <Grid container justifyContent={"flex-end"}>
+              <Grid item>
+                <Link to="/login">
+                  Already have an account? Sign in
+                </Link>
               </Grid>
+            </Grid>
           </Box>
         </Box>
       </Container>
