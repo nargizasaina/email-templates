@@ -11,6 +11,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import {Link} from 'react-router-dom';
 
 function ToolBar() {
   const [auth, setAuth] = React.useState(true);
@@ -62,8 +63,7 @@ function ToolBar() {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>My account</MenuItem>
+                <MenuItem onClick={handleClose} component={Link} to='/templates'>My templates</MenuItem>
               </Menu>
             </div>
           )}
