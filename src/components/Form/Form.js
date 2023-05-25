@@ -1,22 +1,20 @@
 import React, {useState, useEffect} from 'react';
 import SunEditor from 'suneditor-react';
 import 'suneditor/dist/css/suneditor.min.css';
-import {Button, TextField} from "@mui/material";
+import {Button, TextField, Box} from "@mui/material";
 import plugins from 'suneditor/src/plugins';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import supabase from '../../supabaseClient';
 import Snackbar from '@mui/material/Snackbar';
 
 const Form = ({isEdit}) => {
   const { id } = useParams();
+  let navigate = useNavigate();
   const [openSnack, setOpenSnack] = React.useState(false);
   const [msgSnack, setMsgSnack] = React.useState(null);
 
   const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
+    if (reason === 'clickaway') return;
     setOpenSnack(false);
   };
 
@@ -33,7 +31,6 @@ const Form = ({isEdit}) => {
   });
 
   const [fetchError, setFetchError] = useState(null);
-  const [addError, setAddError] = useState(null);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -43,24 +40,20 @@ const Form = ({isEdit}) => {
         .select()
         .eq('id', id)
 
-      if (error) {
-        setFetchError('Could not fetch the template');
-        console.log(error);
+        if (error) setFetchError('Could not fetch the template');
+
+        if (data) {
+          setTemplate({...data[0]});
+          setFetchError(null);
+        }
       }
 
-      if (data) {
-        setTemplate({...data[0]});
-        setFetchError(null);
-      }
+      fecthTemplate();
+    } else {
+      setTemplate({...initialTemplate});
     }
-
-    fecthTemplate();
-  } else {
-    setTemplate({...initialTemplate});
-  }
   
-  }, [id, isEdit]);
-  console.log(template);
+  }, [id, isEdit, initialTemplate]);
 
   const onInputChange = (e) => {
     const {name, value} = e.target;
@@ -77,7 +70,6 @@ const Form = ({isEdit}) => {
     }));
   };
 
-
   const handleImageUpload = (targetImgElement, index, state, imageInfo, remainingFilesCount) => {
     // setTemplate(prev => ({
     //   ...prev,
@@ -88,15 +80,22 @@ const Form = ({isEdit}) => {
 
   const onSubmit = async e => {
     e.preventDefault();
-    // console.log(template);
     if (!template.name || !template.subject) {
+      setMsgSnack('Please fill in the fields');
+      setOpenSnack(true);
       return;
     }
 
-    const getQuantity = async () => {
+    if (isEdit) {
+      await supabase
+        .from('myTemplates')
+        .update({ ...template })
+        .eq('id', id);
+    } else {
+      const getQuantity = async () => {
       const { data } = await supabase
         .from('myTemplates')
-        .select()
+        .select();
 
         if (data.length === 4) {
           setMsgSnack('You already have 5 templates');
@@ -106,93 +105,102 @@ const Form = ({isEdit}) => {
       }
     await getQuantity();
 
-    const {data, error} = await supabase
-    .from('myTemplates')
-    .insert([{...template}])
-
-    if (error) {
-      setAddError('Please fill in the fields');
-    } 
-
-    if (data) {
-      setAddError(null);
-    }
-
     setMsgSnack('Successfully saved!');
     setOpenSnack(true);
+    await supabase
+    .from('myTemplates')
+    .insert([{...template}]);
+    }
+    
+    navigate('/templates');
   };
 
   return (
     fetchError ? <p>{fetchError}</p> 
     : template && 
-      <form onSubmit={onSubmit}>
-        <p>Please name Your template</p>
-        <TextField
-          name="name"
-          value={template.name}
-          required={true}
-          margin="dense"
-          type="text"
-          fullWidth
-          onChange={(e) => onInputChange(e)}
-        />
-        <p>Subject</p>
-        <TextField
-          name="subject"
-          value={template.subject}
-          required={true}
-          margin="dense"
-          type="text"
-          fullWidth
-          onChange={onInputChange}
-        />
-        <p>Body</p>
-        <SunEditor 
-          lang="en"
-          name="my-editor"
-          height="200px" 
-          onChange={handleChange}
-          onImageUpload={handleImageUpload}
-          setContents={template.body || ''}
-          setDefaultStyle="font-size: 17px;"
-          previewTemplate="<div style='width:auto; max-width:1080px; margin:auto;'><h1>Preview Template</h1> {{contents}}</div>"
-          setOptions={{
-            plugins: plugins,
-            buttonList: [
-              [
-                "font",
-                "bold",
-                "underline",
-                "italic",
-                "strike",
-                "list",
-                "align",
-                "fontSize",
-                "link",
-                "image",
-                "undo",
-                "redo",
-                "preview",
-                "indent",
-                "blockquote",
+    <div>
+      <div className='wysiwig'>
+        <form onSubmit={onSubmit}>
+          <p>Please name Your template</p>
+          <Box sx={{display: 'flex', alignItems: 'center'}}>
+            <TextField
+            name="name"
+            value={template.name}
+            required={true}
+            margin="dense"
+            type="text"
+            fullWidth
+            onChange={(e) => onInputChange(e)}
+            />
+            <Button 
+              variant='contained' 
+              size='small' 
+              type='button'
+              sx={{textTransform: 'lowercase', ml: '10px'}}
+              onClick={() => setTemplate(initialTemplate)}
+            >
+              default values
+            </Button>
+          </Box>
+          <p>Subject</p>
+          <TextField
+            name="subject"
+            value={template.subject}
+            required={true}
+            margin="dense"
+            type="text"
+            fullWidth
+            onChange={onInputChange}
+          />
+          <p>Body</p>
+          <SunEditor 
+            lang="en"
+            name="my-editor"
+            height="200px" 
+            onChange={handleChange}
+            onImageUpload={handleImageUpload}
+            setContents={template.body || ''}
+            setDefaultStyle="font-size: 17px;"
+            previewTemplate="<div style='width:auto; max-width:1080px; margin:auto;'><h1>Preview Template</h1> {{contents}}</div>"
+            setOptions={{
+              plugins: plugins,
+              buttonList: [
+                [
+                  "font",
+                  "bold",
+                  "underline",
+                  "italic",
+                  "strike",
+                  "list",
+                  "align",
+                  "fontSize",
+                  "link",
+                  "image",
+                  "undo",
+                  "redo",
+                  "preview",
+                  "indent",
+                  "blockquote",
+                ]
               ]
-            ]
-          }}
-        />
-        <Button 
-          variant="contained"
-          type="submit"
-          sx={{ marginTop: 2, mb: 2 }}
-        >
-          Save
-        </Button>
-        <Snackbar
-          open={openSnack}
-          autoHideDuration={6000}
-          onClose={handleClose}
-          message={msgSnack}
-        />
-      </form>
+            }}
+          />
+          <Button 
+            variant="contained"
+            type="submit"
+            sx={{ marginTop: 2, mb: 2 }}
+          >
+            Save
+          </Button>
+          <Snackbar
+            open={openSnack}
+            autoHideDuration={6000}
+            onClose={handleClose}
+            message={msgSnack}
+          />
+        </form>
+      </div>
+    </div>
   )
 };
 

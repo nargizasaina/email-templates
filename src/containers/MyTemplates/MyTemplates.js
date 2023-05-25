@@ -8,10 +8,11 @@ import Box from '@mui/material/Box';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import supabase from '../../supabaseClient';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 
 const MyTemplates = () => {
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [error, setError] = useState(null);
   const [open, setOpen] = React.useState(false);
@@ -28,14 +29,10 @@ const MyTemplates = () => {
       .from('myTemplates')
       .select('*')
 
-      if (error) {
-        setError('Could not fetch the templates');
-        console.log(error);
-      }
+      if (error) setError('Could not fetch the templates');
 
       if (data) {
         setTemplates(data);
-        
         setError(null);
       }
   }
@@ -44,17 +41,14 @@ const MyTemplates = () => {
     fecthTemplates();
   }, []);
 
-  const onEditHandler = (id) => {
-
-  };
-
   const onDeleteHandler = async (id) => {
-    const { error } = await supabase
+    await supabase
       .from('myTemplates')
       .delete()
       .eq('id', id);
     setOpen(true);
     fecthTemplates();
+    navigate('/templates');
   };
 
   return (
@@ -76,7 +70,6 @@ const MyTemplates = () => {
               <Box>
                 <Button 
                   size="small" 
-                  onClick={() => onEditHandler(el.id)}
                   component={Link} to={'/templates/' + el.id} 
                 ><ModeEditIcon/>
                 </Button>
@@ -85,9 +78,6 @@ const MyTemplates = () => {
             </Box>
           <Typography variant="h5" component="div">
             <b>Subject: </b>{el.subject}
-          </Typography>
-          <Typography sx={{ mb: 1.5 }} color="text.secondary">
-            <b>Body: </b>{el.body}
           </Typography>
           </CardContent>
         </Card>

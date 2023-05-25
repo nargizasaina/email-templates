@@ -1,8 +1,8 @@
 import React from "react";
 import Form from "../../components/Form/Form";
 
-
-const EditTemplate = () => { return (
+const EditTemplate = () => { 
+  return (
     <>
       <h3 className='title'>Edit template</h3>
       <Form
