@@ -25,7 +25,7 @@ const ToolBar = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component={Link} to='/' sx={{ flexGrow: 1}}>
-            DAT
+            DAT <span style={{fontSize: '14px'}}>You can easily change email Templates</span>
           </Typography>
           <div>
             <IconButton

@@ -117,8 +117,7 @@ const Form = ({isEdit}) => {
 
   return (
     fetchError ? <p>{fetchError}</p> 
-    : template && 
-    <div>
+    : <div>
       <div className='wysiwig'>
         <form onSubmit={onSubmit}>
           <p>Please name Your template</p>
